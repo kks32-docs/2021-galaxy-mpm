@@ -1,0 +1,153 @@
+\documentclass[journal]{IEEEtran}
+
+\usepackage[pdftex]{graphicx}
+\usepackage{amsmath}
+\usepackage{algorithmic}
+\usepackage{cleveref}
+\usepackage{url}
+
+\begin{document}
+
+\title{TBC: In-situ visualization with TACC Galaxy in Material Point Method}
+% author names and IEEE memberships%
+
+\author{Greg Abram, %~\IEEEmembership{Fellow,~OSA,}
+        Andrew Solis,
+        and~Krishna Kumar% <-this % stops a space
+\thanks{Department of Civil, Architectural and Environmental Engineering, University of Texas at Austin, TX, 78712 USA e-mail: (krishnak@utexas.edu).}% <-this % stops a space
+\thanks{Texas Advanced Computing Center, University of Texas at Austin, TX,.}% <-this % stops a space
+\thanks{Manuscript received September 6th, 2021.}}
+
+% The paper headers
+\markboth{IEEE Computing in Science and Engineering (CiSE), Special Issue 2021}%
+{}
+
+%\IEEEpubid{0000--0000/00\$00.00~\copyright~2015 IEEE}
+% use for special paper notices
+%\IEEEspecialpapernotice{(Invited Paper)}
+
+% make the title area
+\maketitle
+
+% As a general rule, do not put math, special symbols or citations
+% in the abstract or keywords.
+\begin{abstract}
+The abstract goes here.
+\end{abstract}
+
+% Note that keywords are not normally used for peerreview papers.
+\begin{IEEEkeywords}
+In-situ viz, MPM, TACC-Galaxy.
+\end{IEEEkeywords}
+
+\IEEEpeerreviewmaketitle
+
+\section{Overview and motivation}
+
+\IEEEPARstart{L}{andslide} runouts are regional-scale events that can bury whole towns (e.g., 2018 Southern California mudflows that followed a series of wildfires~\cite{lukashov2019post}) or devastate entire regions (e.g., 2016 Kaikoura, New Zealand earthquake recorded 100,000 landslides within a 12,000 sq. km area~\cite{dellow2017landslides}). The frequency of these regional-scale landslides is increasing with devastating earthquakes, extreme precipitation, and wildfires caused by climate change. Even in these risk-prone communities, where the residents are aware of the threat posed by the landslides and in some cases experienced significant modification to the landscape or their behavior, the residents repeatedly show indifference to the threats, consequently fail to act. The human capacity to deny danger endangers lives and property~\cite{kim2020public}. In 2020, twenty-two extreme events cost the United States \$95 billion in damages. The underlying problem is the uncertainty of the actual event and a lack of understanding of its potential impacts. How can the reality of potential risk be communicated to a diverse group of actors, who must understand and support a complex set of actions to reduce that risk for the whole community?
+  
+Visualization is the key to communicating scientific results effectively to engineering decision-makers and the public~\cite{mayer2005cognitive}. Given limited cognitive capacity, visualizing the complex information of threats as images enhances the brain's capacity to perceive opportunities and make decisions. Visual representation of complex information reduces the cognitive load on human information processing and increases human "absorptive capacity" for problem-solving~\cite{kahneman2012human}. However, these visualizations must be physically sound to be perceived as realistic and accepted as valid.
+
+Despite the landslide risks, most regional-scale landslide hazard analyses do not consider downstream impacts and the aerial extent of debris-flow runouts~\cite{USGS2017debris}. Traditional numerical methods such as the Finite Element Method (FEM) primarily focuses on the onset of failure but provides limited information on the post-failure runout mechanisms due to mesh distortions at large  deformations~\cite{soga2016trends}. Modeling the impacts of the potential runout of large landslides is possible with new tools such as Material Point Method (MPM)~\cite{Bardenhagen2000,Bardenhagen2004,Sulsky1994,Sulsky1995}. MPM is a mesh-free method that discretizes the domain as a collection of \textit{material points} moving on a background grid, and their deformations are determined by Newton's laws of motion. In this study, we employ the CB-Geo MPM code (\url{https://github.com/cb-geo/mpm}), and a typical MPM computation cycle is shown in~\cref{fig:mpm}. For more information on MPM and the code implementation, refer to~\cite{kumar2019scalable}. MPM results, which can then be used to translate the results of these analyses into effective visualizations to inform decision-makers of potential hazards. 
+
+Visualization is also context and user-specific, i.e., different users may be interested in different aspects of the experimental or simulation data sets. Hence, the same data set may be represented in several forms – perhaps at varying levels of detail, emphasizing or deemphasizing different regions and features, and employing different visualization techniques to best present the information. Data retrieval and visualization in High-Performance Computing applications have long been a bottleneck. Current techniques for visualization petascale simulation output involve writing a temporal slice of a subset of the data to disk. In practice, this usually means that the data are stored only at specific time-steps, often at a much coarser resolution than the original data, which leads to a significant portion of information being disregarded and potentially lost. A large-scale simulation running for thousands of time steps across compute nodes sampled at a predefined frequency of only every 100 - 500-time steps results in several terabytes of data. Nevertheless, the scale of such discrete geometry visualization will push commercial rendering engines like Mantra and Arnold to the limit. The amount of data would be several orders of magnitude higher at exascale levels, making the simulation spend most of the supercomputing time doing I/O.
+
+In-situ visualization is a rendering technique for visualizing the simulation data in real-time without requiring additional storage resources. Running the visualization and simulation in tandem avoids the bottleneck of data transfer. Furthermore, this approach allows for monitoring and interaction while the simulation is running, which enables scientists to modify simulation parameters and explore the effect on the phenomena in real-time. In-situ visualization is a promising solution, and libraries such as ParaView Catalyst and SENSEI offer the ability to couple existing data models (such as VTK) to query regions of interest and to render simulations. Ray tracing engines such as TACC's Gravit and Galaxy offer distributed asynchronous in-situ visualization capabilities for petascale simulations.
+
+
+\begin{figure}[!htbp]
+    \centering
+    \includegraphics[width=\linewidth]{figs/mpm.pdf}
+    \caption{Illustration of the MPM algorithm (1) A representation of material points overlaid on a computational grid. Arrows represent material point state vectors (mass, volume, velocity, etc.) being projected to the nodes of the computational grid. (2) The equations of motion are solved onto the nodes, resulting in updated nodal velocities and positions. (3) The updated nodal kinematics are interpolated back to the material points. (4) The state of the material points is updated, and the computational grid is reset.}
+    \label{fig:mpm}
+\end{figure}
+\begin{itemize}
+  \item why simulating earthquakes is important
+  \item why such sim is hard
+  \item brief description of MPM and benefits, cite to marker paper
+  \item why in situ vis is needed / benefits
+  \item Galaxy + MPM = awesomeness
+\end{itemize}
+  
+\section{Related work}
+  - brief summary other in situ, cite Hank term paper, maybe others
+
+\section{Methodology}
+\begin{itemize}
+  \item tie into existing VTK-write path
+  \item Galaxy expand to handle unstructured mesh
+  \item tracking particles across domain boundaries
+\end{itemize}
+  
+\section{Results}
+  - show some pretty pictures
+  - provide some runtime stats
+
+\section{Conclusion}
+- Future work
+
+\appendices
+
+% use section* for acknowledgment
+\section*{Acknowledgment}
+The authors would like to thank...
+
+
+% Can use something like this to put references on a page
+% by themselves when using endfloat and the captionsoff option.
+\ifCLASSOPTIONcaptionsoff
+  \newpage
+\fi
+
+% trigger a \newpage just before the given reference
+% number - used to balance the columns on the last page
+% adjust value as needed - may need to be readjusted if
+% the document is modified later
+%\IEEEtriggeratref{8}
+% The "triggered" command can be changed if desired:
+%\IEEEtriggercmd{\enlargethispage{-5in}}
+
+% references section
+
+% can use a bibliography generated by BibTeX as a .bbl file
+% BibTeX documentation can be easily obtained at:
+% http://mirror.ctan.org/biblio/bibtex/contrib/doc/
+% The IEEEtran BibTeX style support page is at:
+% http://www.michaelshell.org/tex/ieeetran/bibtex/
+\bibliographystyle{IEEEtran}
+% argument is your BibTeX string definitions and bibliography database(s)
+\bibliography{IEEEabrv,references.bib}
+%
+% <OR> manually copy in the resultant .bbl file
+% set second argument of \begin to the number of references
+% (used to reserve space for the reference number labels box)
+%\bibliography{references.bib}
+
+% biography section
+% 
+% If you have an EPS/PDF photo (graphicx package needed) extra braces are
+% needed around the contents of the optional argument to biography to prevent
+% the LaTeX parser from getting confused when it sees the complicated
+% \includegraphics command within an optional argument. (You could create
+% your own custom macro containing the \includegraphics command to make things
+% simpler here.)
+%\begin{IEEEbiography}[{\includegraphics[width=1in,height=1.25in,clip,keepaspectratio]{mshell}}]{Michael Shell}
+% or if you just want to reserve a space for a photo:
+
+% \begin{IEEEbiography}{Michael Shell}
+% Biography text here.
+% \end{IEEEbiography}
+
+% if you will not have a photo at all:
+% \begin{IEEEbiographynophoto}{John Doe}
+% Biography text here.
+% \end{IEEEbiographynophoto}
+
+%\vfill
+
+% Can be used to pull up biographies so that the bottom of the last one
+% is flush with the other column.
+%\enlargethispage{-5in}
+\end{document}
+
+
