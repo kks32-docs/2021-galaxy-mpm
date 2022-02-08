@@ -1,0 +1,228 @@
+% LaTeX rebuttal letter example. 
+% Licensed under cc by-sa 3.0 with attribution required.
+
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{lipsum} % to generate some filler text
+\usepackage{fullpage}
+
+% package needed for optional arguments
+\usepackage{xifthen}
+% define counters for reviewers and their points
+\newcounter{reviewer}
+\setcounter{reviewer}{0}
+\newcounter{point}[reviewer]
+\setcounter{point}{0}
+
+% This refines the format of how the reviewer/point reference will appear.
+\renewcommand{\thepoint}{P\,\thereviewer.\arabic{point}} 
+
+% command declarations for reviewer points and our responses
+\newcommand{\reviewersection}{\stepcounter{reviewer} \bigskip \hrule
+                  \section*{Reviewer \thereviewer}}
+
+\newenvironment{point}
+   {\refstepcounter{point} \bigskip \noindent {\textbf{Reviewer~Point~\thepoint} } ---\ }
+   {\par }
+
+\newcommand{\shortpoint}[1]{\refstepcounter{point}  \bigskip \noindent 
+	{\textbf{Reviewer~Point~\thepoint} } ---~#1\par }
+
+\newenvironment{reply}
+   {\medskip \noindent \begin{sf}\textbf{Reply}:\  }
+   {\medskip \end{sf}}
+
+\newcommand{\shortreply}[2][]{\medskip \noindent \begin{sf}\textbf{Reply}:\  #2
+	\ifthenelse{\equal{#1}{}}{}{ \hfill \footnotesize (#1)}%
+	\medskip \end{sf}}
+
+% References
+\usepackage{biblatex}
+\addbibresource{references.bib}
+
+% Title content
+\title{Revisions for ``In-situ visualization of natural hazards with Galaxy and Material Point Method''}
+\date{}
+\begin{document}
+\maketitle
+We thank the reviewers for their critical assessment of our work. We have substantially revised our paper improving the readability of the methodology sections and accessible visualizations as well. 
+In the following, we address their concerns point by point.
+
+\section*{Editor-in-Chief comments}
+
+\begin{point}
+I agree with the reviewer who says that your claim of “can achieve in-situ viz … with billions of particles” needs to be justified, given that the demo in the paper only uses 4 million.
+\end{point}
+\shortreply{\label{Expl:scaling}
+Thank you for the comment. We have added strong scaling results for the MPM code as well as added some published results that show the capability of Galaxy to simulate a 1 billion particle model of Cosmic Web\cite{abram2018galaxy}. Having said that we have also toned down our claims for doing billion particle simulations.}
+
+\begin{point}
+Also agree that M:N point-to-point is unclear for readers. On page 4, the paragraph starting “We choose Galaxy…” needs expansion and more careful explanation of Galaxy for the non-insider. The whole paragraph currently is quite impenetrable.
+\end{point}
+\begin{reply}
+\label{Expl:MN}
+Thank you for the comments. We have completely rewritten the paragraph explaining in detail how the M:N communication works. 
+
+\begin{quote}
+Two concerns arose in developing the MPM-Galaxy interface.   First, we would like to balance the performance of the MPM simulation with the Galaxy visualization by varying the ratio of MPM processes to Galaxy processes.   Second, the spatial partitioning layout in MPM is not absolute; while each MPM process manages a relatively compact region of space, these regions overlap and do not form the clean Cartesian boundaries necessary for Galaxy.   To address these problems, we developed an asynchronous M to N data transfer scheme between M MPM processes and N Galaxy processes that incorporates a sorting step.   This is implemented by communicating an appropriate layout of partitions, given the number of Galaxy processes in play and the bounding box of the MPM computational space, to MPM at data transfer time.   Each MPM process then traverses its particle data, determines which Galaxy process's partition space the particle lies, and transfers them accordingly.  The M:N point-to-point interface between MPM worker processes and Galaxy processes offers better load balancing performance.  We can vary the number of processes for MPM and Galaxy so that they run at approximately the same pace.  When out of balance, we can
+choose to drop frames of the visualization by having MPM
+continue without pausing for Galaxy (if Galaxy is not ready), or by having MPM wait for Galaxy to be ready.
+\end{quote}
+\end{reply}
+
+\begin{point}
+The Result section does need some elaboration. You are comparing one run with checkpointing every 5,000 steps but no in-situ visualization, to one that does visualization in-situ every 100 steps. In the first case, data exploration would only be available from post-processing the saved data at checkpoint times. In the second, data visualizations are available with much greater frequency. For scientific findings, would data at checkpoint times be sufficient? Or would more frequent I/O be needed? It sounds like you need to expand in your discussion section on the difference in interpretation potential of these two cases, from the science point of view. You also need to expand the final section where you extrapolate the need to the scale of billions of particles. How do you arrive at that estimate? What makes you think that your system will be able to achieve that scale? Please spend a little more effort persuading readers here, given that the paper is short and you have the space.
+\end{point}
+\shortreply{Regional-scale simulations are extremely time consuming both in the sense of running the simulations as well as the post-hoc visualization of the results. When the simulation scale increase, writing all the results at a fixed frequency further increases the computational time. Due to the I/O bottleneck, often researchers minimize the amount of data written, while also increasing the duration between data outputs. 
+
+We agree that we haven't scaling results. We have added the MPM scaling results to 128 nodes and included references for the claim of Galaxy being able to simulate billions of particles running on 128 nodes~\cite{abram2018galaxy}. We have also revised our claims accordingly.
+
+We have also added the following statement to qualify why we need in-situ viz for regional-scale landslide: 
+\begin{quote}
+    In-situ visualization with Galaxy/MPM integration offers insights into the dynamics of very fast runouts, such as the Oso landslide (total duration of runout is 120s) with a very fine temporal resolution, which are otherwise infeasible using traditional post-processing visualization.
+\end{quote}
+}
+
+\shortpoint{p.1, col.2, l.27: focuses $->$ focus \dots provides $->$ provide}
+\shortreply{Thanks. We have fixed this issue.}
+
+\shortpoint{line 37: refer to [5] - do not use references as parts of speech; note that the article layout will set these as superscripts; rephrase with something like ``refer to Kumar et al. [5]"}
+\shortreply{Thank you we have revised all references in the text accordingly.}
+
+\shortpoint{line 43: Scaling \dots require $->$ requires}
+\shortreply{Thanks. We have fixed this issue.}
+
+\shortpoint{p,2, col.2, l.54: simulation have $->$ simulations have}
+\shortreply{Thanks. We have fixed this issue.}
+
+\begin{point}
+– You will need to add short author bios at the end. Here is the way that these should be set up: 
+//Author full name// is a //role// in the //department, institution, country, post code//. //His/Her/Their// research interests include //list 3 to 5 brief topics//. //Last name// received a //highest degree// in //field/subject/area// from //institution//. [Do not list year.] //He/She/They// are a member //or higher// of //relevant professional associations [we like to list IEEE or IEEE CS first, but it's fine to group by type of membership to keep it brief]//. //If this person is a CISE EB member or a Computer Society elected officer, you can mention this separately here.// Contact //him/her/them// at [best email address]. 
+\end{point}
+\shortreply{Thanks. We have added the bios for all the authors.}
+
+\section*{Associate Editor}
+\shortpoint {My main concern with the current state of the manuscript is that scalability is not discusses in detail (and certainly not empirically demonstrated) and the mapping of processes (both simulation and visualization processes) onto physical computing resources is far from clear. Better definition for "develop a scalable N:M interface architecture"}
+\shortreply{Thank you for the comments. We have added scaling results and references to show the scalability of both MPM and Galaxy. Also, we have revised the M:N interface description. Please see our responses to the Editor P0.1 and P0.2.}
+
+\shortpoint{ better support for "The developed approach can achieve in-situ visualization of regional scale landslides with billions of particles with minimal impact on the simulation process."}
+\shortreply{\label{Expl:scaling}
+Thank you for the comment. We have added strong scaling results for the MPM code as well as added some published results that show the capability of Galaxy to simulate a 1 billion particle model of Cosmic Web\cite{abram2018galaxy}. We have also quantitatively show the amortized simulation time impact increased by only 2\% compared to no-visualization which is an extreme case. Typically, post-processing visualization is done every 1000 steps, which significantly slows down the runtime by more than 2\% observed in in-situ visualization.}
+
+\shortpoint{better description of Galaxy architecture and use of OSPRay / Embree hardware accel}
+
+\begin{reply}
+Thank you for the comments. We have added a description of how Galaxy links to OSPRay and Embree and added a reference of ~\cite{abram2018galaxy} which provides detailed description of Galaxy implementation. 
+\begin{quote}
+    Note that Galaxy is actually a framework for the management and exchange of rays between processes; it does not actually perform ray/surface or ray/volume     intersections itself.  Rather, it relies on OSPRay (or, rather, OSPRay's Embree and OpenVKL underpinnings) to perform the \textit{local} ray tracing.  This could equally well be performed by Optix.  For more information on Galaxy, please see Abram et. al. \cite{abram2018galaxy}.    
+\end{quote}
+\end{reply}
+
+\shortpoint{better description of overhead / resource costs }
+\begin{reply}
+Thank you we have rewritten the results section on the costs and overheads. 
+
+\begin{quote}
+    Using four nodes of Stampede2 at TACC, each running four MPM worker processes, we first ran 15,000 steps without in-situ visualization but saving checkpoint files every 5,000 steps, resulting in five time step datasets over this interval. In this case, the wall-clock time required to run each 5,000 steps - as determined by timestamps on output files - was approximately 2 hours, 23 minutes.
+    
+    We then reran the same interval of the simulation with the same checkpoint dumps, but now using the MPM/Galaxy interface to transfer data from MPM to Galaxy every 100 steps (0.1 s of real-time runout, where a difference in the runout can be perceived).  In-situ visualization with Galaxy/MPM integration offers insights into the dynamics of very fast runouts, such as the Oso landslide (total duration of runout is 120s) with a very fine temporal resolution, which are otherwise infeasible using traditional post-processing visualization. We found that Galaxy was substantially faster than MPM, even when running on a single node.  To make full use of the I/O bandwith available on that node, we use a M:N interface of 4:1 with four MPM worker nodes to one Galaxy worker nodes.  With this setup, Galaxy required approximately 6.5 seconds for each timestep to receive the data, repartition it, and render the visualizations - far less than the three minutes required by MPM to run through 100 steps.   In this second case with in-situ visualization, the wall-clock time needed by MPM to run through 5,000 steps was approximately 2 hours, 26 minutes, or 2 percent more than the first, non-visualized case. 
+\end{quote}
+
+\end{reply}
+
+% Let's start point-by-point with Reviewer 1
+\reviewersection
+
+\begin{point}
+My main concern with the current state of the manuscript is that scalability is not discusses in detail (and certainly not empirically demonstrated) and the mapping of processes (both simulation and visualization processes) onto physical computing resources is far from clear.
+\end{point}
+\shortreply{\label{Expl:scaling}
+Thank you for the comment. We have added strong scaling results for the MPM code as well as added some published results that show the capability of Galaxy to simulate a 1 billion particle model of Cosmic Web\cite{abram2018galaxy}.}
+
+
+
+\begin{point}
+the abstract states "In this study, we develop a scalable N:M interface architecture to visualize regional-scale landslides.": what is N and what is M? Even though some clues appear latter in the text, the reader has not , yet, any idea of what is being said.
+\end{point}
+\shortreply{Thank you for the comment. We have completely revised this section. Please see our response to the Editor P0.1 and P0.2.}
+
+\begin{point}
+ lines 5..7 of page 4 state: "allows Galaxy to do most of the work locally, considering (on average) only 1/N of the data,"; N hasn't been defined yet. I suppose we can infer that N are the number of partitions of the computational space, has decided by Galaxy, but this needs to be clarified. Even because later N seems to be the number of Galaxy processes, and it is far from obvious that there should be a 1:1 correspondence between space partitions and processes...
+\end{point}
+\begin{reply}
+\label{Expl:MN}
+Thank you for the comments. We have completely rewritten the paragraph explaining in detail how the M:N communication works. Please see our response to the Editor P0.1. We have also moved the discussion in section D on parallel rendering to later in in the Galaxy Side section after M:N interfaces are introduced. 
+\end{reply}
+
+
+\begin{point}
+ lines 7..10 of the 2nd column of page 4 state that "by developing an M:N point-to-point interface between MPM worker processes and Galaxy processes, we can vary the number of processes in each so that they run at approximately the same pace.". This is the 1st time the reader is given an hint that M are (I suppose) the number of simulation processes and N the number of visualization (Galaxy) processes (and simultaneously the number of Galaxy partitions of the space). Also it is vaguely suggested that by varying the relationship between M and N some kind of synchronicity (or maybe load balancing) between the simulation and the visualization can be achieved. But this must be clarified.
+\end{point} 
+\shortreply{Apologies for the vague description. We have completely rewritten this section. Please see our response to Editor P0.1.}
+
+\begin{point}
+line 23 of the 2nd column of page 5 states "In this case, we ran Galaxy using four worker processes on a single node, ".  Now the issue of mapping processes to nodes becomes suddenly obvious and it has not been explained. What are M and N after all? The number of processes for sim and viz or the number of nodes ? It is also not clear whether additional nodes are used for visualization (compared to the non in-situ case). is this an extra node, not used by the MPM processes? It certainly seems so, but it should be made clearer.
+\end{point}
+\begin{reply}
+Apologies for the lack of clarity. M:N interface refers to M processors running MPM and N processors running Galaxy. For comparing the case of no visualization (4 Nodes for MPM) with Galaxy in-situ visualization (1 additional node for Galaxy, in addition to 4 MPM tasks). This explanation has been added to the text.
+
+Offering in-situ visualization capabilities incurs additional compute cost at run-time. However, post-processing visualization also has this addition compute cost, which is likely to be higher than in-situ visualization due to increased storage and latency requirements. We have added the above statements to our manuscript. 
+\end{reply}
+
+\begin{point}
+Also I wonder how would this scale. Is there any notion of how should N grow with M for larger simulations and how would this impact on execution time? In other words, how do both systems (MPM and Galaxy) scale with respect to each other and the problem size?
+\end{point}
+\shortreply{Thank you for your comments. We agree that we have not demonstrated the integrated approach to scale to billions of particles. However, we have included strong-scaling results of MPM running of 128 nodes. In addition, we have added citations to back-up our claim of Galaxy supporting a billion particle simulations of Cosmic Web~\cite{abram2018galaxy}. Since the scaling of both Galaxy and MPM are both linear to 128 nodes, we expect the M:N ratio would be similar to 4:1 with the 4 million material points. However, as simulations become more computationally intensive, we would have to run some trials to understand how this ratio will change. We agree with the reviewers, we have toned down our claim to scale to billions of particles.}
+
+\begin{point}
+This scalability issue is important because the last sentence of the abstract states : "The developed approach can achieve in-situ visualization of regional scale landslides with billions of particles with minimal impact on the simulation process." Is there any data supporting this claim? The presented study seems to use 4.2 million points (line 36, column 1, page 4). It is not clear how many processing nodes have been used (clearly M=4, but how many nodes assuming there are sim processes, and a single node is used to run 4 viz processes). So how can one conclude on the scalability to billions of points or even on the scalability to larger computing systems? I read reference [8] and can see results on Galaxy scalability up to 128 nodes; but I couldn't establish a clear relationship with this M:N ratio. Nevertheless, given the nature of this journal, I think the manuscript should be as self contained as possible. In this sense, I would like the authors to make this scalability issue more clear and/or rephrase the claim on the last sentence of the abstract and last on section V.A ("Future work").
+\end{point}
+\shortreply{Thank you for comments. We agree with the reviewer. As explained in the previous reply, we have added some scaling results. We also acknowledge the claim is not demonstrated and we have changed the claim accordingly.}
+
+
+\reviewersection
+\begin{point}
+
+For a submission on Hardware-accelerated Ray Tracing for Scientific Simulations, I expected hardware accelerated ray tracing to play a larger part in the paper. I believe the content is highly relevant to the issue, but the paper needs some minor messaging adjustments. For example, "Galaxy, developed at TACC, differs from OSPRay and Optix in that it is based on a regular partitioning of the computational" I found this paragraph awkward and hard to parse the difference. OSPRay and Optix work on local data and Galaxy builds on top of hardware accelerated ray tracing (i.e., OSPRay) to work a distributed memory setting. Asynchronous distributed memory is hard, and worthy of discussing. I had to go to the github repository to discover that Galaxy leverages hardware accelerated ray tracing through OSPRay.
+\end{point}
+\shortreply{Thank you for the comment. We have added the following text:
+\begin{quote}
+    Note that Galaxy is actually a framework for the management and exchange of rays between processes; it does not actually perform ray/surface or ray/volume intersections itself.   Rather, it relies on OSPRay (or, rather, OSPRay's Embree and OpenVKL underpinnings) to perform the \textit{local} ray tracing.  This could equally well be performed by Optix.   For more information on Galaxy, please see Abram et. al. \cite{abram2018galaxy}.
+\end{quote}
+}
+
+\begin{point}
+One note on the cost of the system. While the additional runtime was only 2\% more than running without Galaxy, isn't there an additional resource cost? For example, if we calculate the costs in terms of node hours consumed by the job then with an additional node used for visualization the cost is greater than 2\%. Additionally, the abstract states that the system can achieve visualizations of billions of particles with minimal impact on the simulation, but it was not demonstrated. What was demonstrated was 3 orders of magnitude less. While theoretically this might be possible, the statement should be backed-up. This language is toned down in the conclusion to "we believe".
+\end{point}
+\shortreply{Thank you for the comment. We acknowledge the lack of scaling results. We have added the MPM strong scaling to 128 nodes and Galaxy also shows good scaling to 128 nodes as demonstrated by Abram~\cite{abram2018galaxy}. Yes, we acknowledge that in-situ visualization with Galaxy incurs additional compute nodes. By tuning the M:N ratio we achieve the runtime for both Galaxy and MPM to be the same. Although there is an increase in computational resource, we aim for both simulation and visualization engines to not wait on each other. We agree that the amortized cost of 2\% does not include the additional cost of nodes for visualization. However, the runtime comparison is to show the choice of using in-situ visualization does not significantly increase the cost of visualizing the results.
+
+We agree that offering in-situ visualization capabilities incurs additional compute cost at run-time. However, post-processing visualization also has this addition compute cost, which is likely to be higher than in-situ visualization due to increased storage and latency requirements. We have added the current paragraph to the manuscript.}
+
+\begin{point}
+"We realized that a new view was necessary to capture the full extent of the run-out at mid-run. We were able to re-parameterize the visualization on the fly to add this additional view." Is this a conclusion of the paper? 
+\end{point}
+\shortreply{Apologies. We have added the explanations of adding views on the fly. We have removed the statement from the conclusion.}
+
+\begin{point}
+- large set of points with scalar attributes (currently 4.2M and potentially billions) 
+
+Change to:
+
+large set of points (currently 4.2M and potentially billions) with scalar attribute.
+\end{point}
+\shortreply{Thank you. We have made the suggested change.}
+
+\shortpoint{This paper doesn't fit the style of the examples that were provided by the editors. Its formatted as a technical paper, although I found that the content wasn't overly technical in most places. Details such as "we generally leave this as localhost/1900 and use an SSH tunnel to connect that local port to wherever the Galaxy root process is running" is probably too much that doesn't add much to the understanding of the contribution.}
+\shortreply{We agree with the reviewer and the statement has been removed.}
+
+\shortpoint{Improve the introduction.}
+\shortreply{Thank you for the comment. We have revised the introduction to make it clear.}
+
+\reviewersection
+
+\begin{point}
+The topic of this manuscript is of a great importance to all readers who are interested in exascale simulations and visualization in the STEM field. The I/O operations during the simulation is always a burden for HPC applications, to avoid such problem, in-situ visualization is needed and should be without extra time cost. The authors coupled the MPM with Galaxy to carry out the in-situ visualization for the Oso landslide with a negligible time cost. The manuscript discussed how exascale simulations needs rendering engines capable of rendering billions of light paths. Most rendering engines only sample a limited number of random light paths at each time step producing images with low visual quality. Therefore, this study used TACC Galaxy Ray tracing engine which offers distributed asynchronous in-situ visualization capabilities for exascale simulations. 
+\end{point}
+\shortreply{Thank you for your encouraging comments.}
+\printbibliography
+\end{document}
